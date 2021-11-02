@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<title>Image to lines</title>
+  </head>
+  <body>
+		<p>
+			Before running this, please note that it's slow.
+			<br>
+			This could be improved upon quite a bit for larger images, but due to the algorithm's nature, slow speeds are kinda inevitable.
+		</p>
+		<p>Select an image:</p>
+		<input type="file" id="files" accept="image/*"></input>
+		<br><br>
+		<label for="resdiv">Resolution divisor (1-Infinity, larger = lower resolution output, but faster):</label>
+		<input type="number" id="resdiv" name="resdiv" value="1"></input>
+		<br>
+		<label id="dim">Resulting image dimensions: 0x0</label>
+		<br>
+		<br>
+		<label for="lines">Lines to generate (0-Infinity, effects total computation time but not speed):</label>
+		<input type="number" id="lines" name="lines" value="10000"></input>
+		<br>
+		<label for="attempts">Randomly tested lines (1-Infinity, smaller = less accurate lines, but faster):</label>
+		<input type="number" id="attempts" name="attempts" value="50"></input>
+		<br>
+		<label for="mutations">Randomly tested mutations (0-Infinity, smaller = less accurate lines, but faster):</label>
+		<input type="number" id="mutations" name="mutations" value="150"></input>
+		<br>
+		<img id="image" />
+		<br>
+		<p>Even if you stop and start again, your progress will not be lost.</p>
+		<input type="button" id="start" value="start"></input>
+		<input type="button" id="stop" value="stop"></input>
+		<br>
+		<canvas id="res"></canvas>
+
+    <script src="imgToLines.js"></script>
+		<script>
+			const files = document.getElementById("files");
+			const resdiv = document.getElementById("resdiv");
+			let imgWidth = 0;
+			let imgHeight = 0;
+
+			files.addEventListener("input", function(){
+				const reader = new FileReader();
+
+				reader.onload = function(res){
+					const image = document.getElementById("image");
+
+					image.src = res.target.result;
+					image.onload = function(){
+						imgWidth = image.width;
+						imgHeight = image.height;
+
+						image.width = Math.round(imgWidth / resdiv.value);
+						image.height = Math.round(imgHeight / resdiv.value);
+
+						document.getElementById("dim").innerText = "Resulting image dimensions: " + image.width + "x" + image.height;
+					};
+
+					spec = [];
+				};
+
+				reader.readAsDataURL(files.files[0]);
+			});
+
+			resdiv.addEventListener("input", function(){
+				image.width = Math.round(imgWidth / resdiv.value);
+				image.height = Math.round(imgHeight / resdiv.value);
+
+				document.getElementById("dim").innerText = "Resulting image dimensions: " + image.width + "x" + image.height;
+			});
+
+			const startButton = document.getElementById("start");
+			const stopButton = document.getElementById("stop");
+
+			startButton.addEventListener("click", function(){
+				if(!document.getElementById("image").src.length){
+					alert("Please select an image that will be generated");
+					return;
+				}
+
+				if(document.getElementById("lines").value < 1){
+					alert("Please set the 'Resolution divisor' value to between 1 and Infinity");
+					return;
+				}
+
+				lines = Math.floor(document.getElementById("lines").value);
+				if(lines < 0){
+					alert("Please set the 'Lines to generate' value to between 0 and Infinity");
+					return;
+				}
+
+				attempts = Math.floor(document.getElementById("attempts").value);
+				if(attempts < 1){
+					alert("Please set the 'Randomly tested lines' value to between 1 and Infinity");
+					return;
+				}
+
+				mutations = Math.floor(document.getElementById("mutations").value);
+				if(mutations < 0){
+					alert("Please set the 'Randomly tested mutations' value to between 0 and Infinity");
+					return;
+				}
+
+				startGenerating();
+			});
+
+			stopButton.addEventListener("click", function(){
+				running = false;
+			});
+		</script>
+  </body>
+</html>
